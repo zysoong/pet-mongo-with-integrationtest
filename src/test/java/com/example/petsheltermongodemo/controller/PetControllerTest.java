@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class PetControllerTest {
 
     @Autowired
@@ -96,6 +96,60 @@ class PetControllerTest {
     }
 
     @Test
-    void searchPetsWithQuery() {
+    @DirtiesContext
+    void searchPetsWithQuery_whenPetWithSearchingNameExists_thenReturnAllPetsContainsSearchTermOfName() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/pets")
+                        .contentType("application/json")
+                        .content(
+                                """
+                                        {
+                                            "name": "Mathias",
+                                            "age": 32,
+                                            "species": "cat"
+                                        }
+                                        """
+                        ))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/pets")
+                        .contentType("application/json")
+                        .content(
+                                """
+                                        {
+                                            "name": "Matt",
+                                            "age": 32,
+                                            "species": "cat"
+                                        }
+                                        """
+                        ))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/pets")
+                        .contentType("application/json")
+                        .content(
+                                """
+                                        {
+                                            "name": "Tadarrrr",
+                                            "age": 32,
+                                            "species": "cat"
+                                        }
+                                        """
+                        ))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
+
+        ObjectMapper om = new ObjectMapper();
+        String matchName = "Mat";
+
+        MvcResult res = mockMvc.perform(MockMvcRequestBuilders.get("/api/pets/search?nameContains=" + matchName))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+
+        List<Pet> listOfPets = om.readValue(res.getResponse().getContentAsString(), new TypeReference<List<Pet>>(){});
+
+        for (Pet p : listOfPets){
+            Assert.isTrue(p.name().contains(matchName), "Integration test failure");
+        }
+
     }
 }
