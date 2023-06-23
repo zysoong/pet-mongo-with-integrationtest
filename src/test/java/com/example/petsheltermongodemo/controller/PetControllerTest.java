@@ -15,13 +15,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class PetControllerTest {
 
     @Autowired
@@ -31,7 +29,6 @@ class PetControllerTest {
     private PetRepository petRepository;
 
     @Test
-    @DirtiesContext
     void getAllPets_whenApiCalledAndListIsEmpty_thenExpectStatusOkAndReturnEmptyListAsJson() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/pets"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -39,7 +36,6 @@ class PetControllerTest {
     }
 
     @Test
-    @DirtiesContext
     void getAllPets_whenApiCalledAndListIsNotEmpty_thenExpectStatusOkAndReturnListAsJson() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/pets")
                         .contentType("application/json")
@@ -62,7 +58,6 @@ class PetControllerTest {
     }
 
     @Test
-    @DirtiesContext
     void getPetById_whenPetWithIdExists_thenReturnPetWithGivenId() throws Exception {
 
         ObjectMapper om = new ObjectMapper();
@@ -96,7 +91,6 @@ class PetControllerTest {
     }
 
     @Test
-    @DirtiesContext
     void searchPetsWithQuery_whenPetWithSearchingNameExists_thenReturnAllPetsContainsSearchTermOfName() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/pets")
